@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { productStyles } from "./productsStyle";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import ProductsSkeleton from "./LoadingProductList";
 
 import {
   useGetProductsQuery,
@@ -28,8 +29,7 @@ export default function ProductList() {
   if (isLoading)
     return (
       <div style={productStyles.page}>
-        {/* <Spinner /> */}
-        <p>Loading...</p>
+        <ProductsSkeleton count={6} />
       </div>
     );
 

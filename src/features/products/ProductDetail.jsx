@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { productDetailStyles } from "./productsStyle";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import ProductDetailSkeleton from "./LoadingProductDetail";
 
 import {
   useGetProductsQuery,
@@ -38,8 +39,7 @@ export default function ProductDetail() {
   if (isLoading)
     return (
       <div>
-        {/* <Spinner /> */}
-        <p>Loading...</p>
+        <ProductDetailSkeleton thumbCount={2} />
       </div>
     );
 
