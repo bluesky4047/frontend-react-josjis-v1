@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { orderStyles } from "./orderStyle";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import OrdersSkeleton from "./OrderLoading";
 
 import {
   useGetOrdersQuery,
@@ -36,8 +37,7 @@ export default function OrderList() {
   if (isLoading)
     return (
       <div style={orderStyles.page}>
-        {/* <Spinner /> */}
-        <p>Loading...</p>
+        <OrdersSkeleton />
       </div>
     );
 
