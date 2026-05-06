@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { paymentStyles } from "./paymentStyle";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import PaymentsSkeleton from "./PaymentLoading";
 
 import {
   useGetPaymentsQuery,
@@ -36,8 +37,7 @@ export default function PaymentList() {
   if (isLoading)
     return (
       <div style={paymentStyles.page}>
-        {/* <Spinner /> */}
-        <p>Loading...</p>
+        <PaymentsSkeleton />
       </div>
     );
 
