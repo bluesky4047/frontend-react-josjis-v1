@@ -9,9 +9,6 @@ const ProductDetailPage = React.lazy(() => import("../pages/products/detail"));
 const OrdersPage = React.lazy(() => import("../pages/order/index"));
 const PaymentsPage = React.lazy(() => import("../pages/payments"));
 const TablesPage = React.lazy(() => import("../pages/tables"));
-
-const TodosPage = React.lazy(() => import("../pages/todos"));
-const MoviesPage = React.lazy(() => import("../pages/movies"));
 const SigninPage = React.lazy(() => import("../pages/auth/Signin"));
 const AdminPage = React.lazy(() => import("../pages/Admin"));
 const Unauthorized = React.lazy(() => import("../pages/Unauthorized"));
@@ -55,10 +52,6 @@ export const router = createBrowserRouter([
       {
         path: "/tables",
         element: <TablesPage />,
-      },
-      {
-        path: "/movies",
-        element: <MoviesPage />,
       },
 
       // ROLE BASED
