@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { tablePageStyles } from "./tablesStyle";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import TablesSkeleton from "./TableLoading";
 
 import {
   useGetTablesQuery,
@@ -36,8 +37,7 @@ export default function TableLists() {
   if (isLoading)
     return (
       <div style={tablePageStyles.page}>
-        {/* <Spinner /> */}
-        <p>Loading...</p>
+        <TablesSkeleton count={6} />
       </div>
     );
 
