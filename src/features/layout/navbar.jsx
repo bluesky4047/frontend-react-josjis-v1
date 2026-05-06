@@ -1,14 +1,16 @@
 import { navbarStyles } from "./layoutStyle";
 import { useAuth } from "../auth/authContext";
+import { useNavigate } from "react-router";
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
-    { key: "products", label: "Produk", icon: "🍽️" },
-    { key: "orders", label: "Pesanan", icon: "📋" },
-    { key: "payments", label: "Pembayaran", icon: "💳" },
-    { key: "tables", label: "Meja", icon: "🪑" },
+    { key: "/", label: "Produk", icon: "🍽️" },
+    { key: "/orders", label: "Pesanan", icon: "📋" },
+    { key: "/payments", label: "Pembayaran", icon: "💳" },
+    { key: "/tables", label: "Meja", icon: "🪑" },
   ];
 
   return (
@@ -31,7 +33,7 @@ function Navbar() {
             <button
               key={item.key}
               style={navbarStyles.link(false)}
-              onClick={() => setPage(item.key)}
+              onClick={() => navigate(item.key)}
             >
               <span>{item.icon}</span>
               {item.label}

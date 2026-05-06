@@ -1,5 +1,5 @@
 import { footerStyles } from "./layoutStyle";
-import { Navigate } from "react-router";
+import { useNavigate } from "react-router";
 
 const menuItems = [
   { key: "/", label: "Produk" },
@@ -9,6 +9,8 @@ const menuItems = [
 ];
 
 function Footer() {
+  const navigate = useNavigate();
+
   return (
     <footer style={footerStyles.footer}>
       <div style={footerStyles.grid}>
@@ -22,7 +24,11 @@ function Footer() {
         <div>
           <div style={footerStyles.colTitle}>Menu</div>
           {menuItems.map((m) => (
-            <div key={m.key} style={footerStyles.colItem}>
+            <div
+              key={m.key}
+              style={footerStyles.colItem}
+              onClick={() => navigate(m.key)}
+            >
               🌿 {m.label}
             </div>
           ))}
