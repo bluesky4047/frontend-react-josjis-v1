@@ -77,7 +77,9 @@ export default function OrderList() {
                   🛒 Pesanan #{order.id.substring(0, 8).toUpperCase()}
                 </div>
                 <div style={orderStyles.orderId}>
-                  Meja ID: {order.table_id.substring(0, 8)}…
+                  {order.table_id
+                    ? `Meja ID : ${order.table_id.substring(0, 8)}…`
+                    : "Type : Takeaway"}
                 </div>
                 <div style={orderStyles.orderDate}>
                   {formatDate(order.created_at)}
