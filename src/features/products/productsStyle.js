@@ -101,6 +101,34 @@ export const productStyles = {
     transition: "all 0.2s",
     TextDecoder: "none",
   },
+  disabledCard: {
+    filter: "grayscale(100%)",
+    opacity: 0.7,
+    cursor: "not-allowed",
+    position: "relative",
+  },
+
+  disabledOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "rgba(0,0,0,0.35)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 20,
+  },
+
+  disabledBadge: {
+    background: "#fff",
+    color: "#111",
+    padding: "8px 16px",
+    borderRadius: "999px",
+    fontWeight: 700,
+    fontSize: "0.8rem",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+  },
 };
 
 export const productDetailStyles = {

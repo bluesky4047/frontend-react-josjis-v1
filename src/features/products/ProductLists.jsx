@@ -49,55 +49,77 @@ export default function ProductList() {
       </div>
 
       <div style={productStyles.grid}>
-        {products.map((p, i) => (
-          <div
-            key={p.id}
-            style={{
-              ...productStyles.card,
-              animationDelay: `${i * 0.1}s`,
-              transform:
-                hoveredId === p.id ? "translateY(-6px)" : "translateY(0)",
-              boxShadow:
-                hoveredId === p.id
-                  ? "0 12px 40px rgba(59,31,10,0.18)"
-                  : "0 4px 20px rgba(59,31,10,0.10)",
-            }}
-            onMouseEnter={() => setHoveredId(p.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={() => navigate(`/products/${p.id}`)}
-          >
-            <div style={productStyles.imgWrap}>
-              <img
-                src={p.img_urls[0]}
-                alt={p.name}
-                style={{
-                  ...productStyles.img,
-                  transform: hoveredId === p.id ? "scale(1.08)" : "scale(1)",
-                }}
-                onError={(e) => {
-                  e.target.src =
-                    "https://placehold.co/400x240/F5E6C8/3B1F0A?text=Foto";
-                }}
-              />
-              {p.category && (
-                <span style={productStyles.badge}>{p.category}</span>
+        {products.map((p, i) => {
+          const isDeleted = p.is_deleted;
+          const isInactive = !p.is_active;
+          const isDisabled = isDeleted || isInactive;
+
+          return (
+            <div
+              key={p.id}
+              style={{
+                ...productStyles.card,
+                ...(isDisabled ? productStyles.disabledCard : {}),
+                animationDelay: `${i * 0.1}s`,
+                transform:
+                  hoveredId === p.id && !isDisabled
+                    ? "translateY(-6px)"
+                    : "translateY(0)",
+                boxShadow:
+                  hoveredId === p.id && !isDisabled
+                    ? "0 12px 40px rgba(59,31,10,0.18)"
+                    : "0 4px 20px rgba(59,31,10,0.10)",
+              }}
+              onMouseEnter={() => !isDisabled && setHoveredId(p.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => {
+                if (!isDisabled) {
+                  navigate(`/products/${p.id}`);
+                }
+              }}
+            >
+              {isDisabled && (
+                <div style={productStyles.disabledOverlay}>
+                  <span style={productStyles.disabledBadge}>
+                    {isDeleted ? "Deleted" : "Inactive"}
+                  </span>
+                </div>
               )}
-            </div>
-            <div style={productStyles.cardBody}>
-              <div style={productStyles.cardName}>{p.name}</div>
-              <div style={productStyles.cardDesc}>{p.description}</div>
-              <div style={productStyles.cardFooter}>
-                <span style={productStyles.price}>{formatRupiah(p.price)}</span>
-                <button
-                  style={productStyles.detailBtn}
-                  onClick={() => navigate(`/products/${p.id}`)}
-                >
-                  Lihat Detail →
-                </button>
+              <div style={productStyles.imgWrap}>
+                <img
+                  src={p.img_urls[0]}
+                  alt={p.name}
+                  style={{
+                    ...productStyles.img,
+                    transform: hoveredId === p.id ? "scale(1.08)" : "scale(1)",
+                  }}
+                  onError={(e) => {
+                    e.target.src =
+                      "https://placehold.co/400x240/F5E6C8/3B1F0A?text=Foto";
+                  }}
+                />
+                {p.category && (
+                  <span style={productStyles.badge}>{p.category}</span>
+                )}
+              </div>
+              <div style={productStyles.cardBody}>
+                <div style={productStyles.cardName}>{p.name}</div>
+                <div style={productStyles.cardDesc}>{p.description}</div>
+                <div style={productStyles.cardFooter}>
+                  <span style={productStyles.price}>
+                    {formatRupiah(p.price)}
+                  </span>
+                  <button
+                    style={productStyles.detailBtn}
+                    onClick={() => navigate(`/products/${p.id}`)}
+                  >
+                    Lihat Detail →
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
