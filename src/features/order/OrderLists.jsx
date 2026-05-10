@@ -106,6 +106,9 @@ export default function OrderList() {
                         {/* {getProductName(item.product_id)} */}
                       </div>
                       <div style={orderStyles.itemId}>
+                        {item.products.name.toUpperCase()}
+                      </div>
+                      <div style={orderStyles.itemId}>
                         @{formatRupiah(item.price)}
                       </div>
                       {item.notes && (

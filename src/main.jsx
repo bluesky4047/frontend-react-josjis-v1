@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { router } from "./app/router";
 import { AuthProvider } from "./features/auth/authContext";
+import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -12,6 +13,20 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <AuthProvider>
         <RouterProvider router={router} />
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          toastOptions={{
+            duration: 6000,
+            style: {
+              background: "rgb(232, 169, 35)",
+              color: "#fff",
+              fontWeight: 1000,
+              borderRadius: "12px",
+              padding: "14px 16px",
+            },
+          }}
+        />
       </AuthProvider>
     </Provider>
   </React.StrictMode>,
