@@ -1,10 +1,9 @@
-import React from "react";
-import { Link } from "react-router";
-import { paymentStyles } from "./paymentStyle";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import PaymentsSkeleton from "./PaymentLoading";
+// AdminPayments.jsx
+// Admin panel: Payments — Update Status, Hapus
+// CSS Module: AdminPayments.module.css
 
+import { useState, useMemo } from "react";
+import styles from "./payments.module.css";
 import {
   useGetPaymentsQuery,
   useCreatePaymentMutation,
@@ -12,183 +11,344 @@ import {
   useDeletePaymentMutation,
 } from "./PaymentApi";
 
-export default function PaymentList() {
-  const navigate = useNavigate();
-  const formatRupiah = (value) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(Number(value));
-  };
+const STATUS_OPTIONS = ["pending", "success", "failed"];
 
-  const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
-  const { data: res = [], isLoading, isError } = useGetPaymentsQuery();
-  const [hoveredId, setHoveredId] = useState(null);
-  const formatDate = (iso) =>
-    new Date(iso).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+// ── Helpers ───────────────────────────────────────────────────────────────
+const formatRupiah = (v) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number(v));
 
-  if (isLoading)
-    return (
-      <div style={paymentStyles.page}>
-        <PaymentsSkeleton />
-      </div>
-    );
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  const { payments, meta } = res.data;
-  const totalAmount = payments.reduce((s, p) => s + Number(p.amount), 0);
+const statusClass = (s) => {
+  if (s === "success") return styles.statusSuccess;
+  if (s === "failed") return styles.statusFailed;
+  return styles.statusPending;
+};
 
-  // const getProductName = (pid) => {
-  //   const p = res.data.data.products.find((x) => x.id === pid);
-  //   return p ? p.name : pid.substring(0, 8) + "…";
-  // };
-
+// ── Stats ─────────────────────────────────────────────────────────────────
+function StatsRow({ payments }) {
+  const count = (s) => payments.filter((p) => p.status === s).length;
+  const sumOf = (s) =>
+    payments
+      .filter((p) => p.status === s)
+      .reduce((acc, p) => acc + Number(p.amount), 0);
   return (
-    <div style={paymentStyles.page}>
-      <div style={paymentStyles.header}>
-        <div style={paymentStyles.eyebrow}>✦ Keuangan</div>
-        <div style={paymentStyles.title}>Daftar Pembayaran</div>
-        <div
-          style={{
-            color: "#9B6A3A",
-            fontSize: "0.85rem",
-            marginTop: "0.25rem",
-          }}
-        >
-          {meta.total} transaksi · Total {formatRupiah(totalAmount)}
-        </div>
+    <div className={styles.statsRow}>
+      <div className={`${styles.statCard} ${styles.success}`}>
+        <span className={styles.statIcon}>✅</span>
+        <span className={styles.statValue}>{count("success")}</span>
+        <span className={styles.statLabel}>Berhasil</span>
       </div>
-
-      <div style={{ overflowX: "auto" }}>
-        <table style={paymentStyles.table}>
-          <thead style={paymentStyles.thead}>
-            <tr>
-              {[
-                "#ID",
-                "Order ID",
-                "Metode",
-                "Jumlah",
-                "Status",
-                "Token",
-                "Waktu",
-              ].map((h) => (
-                <th key={h} style={paymentStyles.th}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((pay, i) => (
-              <tr key={pay.id} style={i % 2 === 1 ? paymentStyles.trAlt : {}}>
-                <td style={paymentStyles.td}>
-                  <code style={{ fontSize: "0.72rem", color: "#9B6A3A" }}>
-                    {pay.id.substring(0, 8)}
-                  </code>
-                </td>
-                <td style={paymentStyles.td}>
-                  <code style={{ fontSize: "0.72rem", color: "#9B6A3A" }}>
-                    {pay.order_id.substring(0, 8)}…
-                  </code>
-                </td>
-                <td style={paymentStyles.td}>
-                  <span style={paymentStyles.methodBadge}>{pay.method}</span>
-                </td>
-                <td style={{ ...paymentStyles.td, ...paymentStyles.amount }}>
-                  {formatRupiah(pay.amount)}
-                </td>
-                <td style={paymentStyles.td}>
-                  <span style={paymentStyles.statusBadge(pay.status)}>
-                    {pay.status}
-                  </span>
-                </td>
-                <td style={{ ...paymentStyles.td, ...paymentStyles.tokenCell }}>
-                  {pay.midtrans_token ? (
-                    pay.midtrans_token
-                  ) : (
-                    <span style={{ color: "#C0A878" }}>—</span>
-                  )}
-                </td>
-                <td style={paymentStyles.td}>
-                  {new Date(pay.created_at).toLocaleDateString("id-ID", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "2-digit",
-                  })}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={`${styles.statCard} ${styles.pending}`}>
+        <span className={styles.statIcon}>⏳</span>
+        <span className={styles.statValue}>{count("pending")}</span>
+        <span className={styles.statLabel}>Pending</span>
+      </div>
+      <div className={`${styles.statCard} ${styles.failed}`}>
+        <span className={styles.statIcon}>❌</span>
+        <span className={styles.statValue}>{count("failed")}</span>
+        <span className={styles.statLabel}>Gagal</span>
+      </div>
+      <div className={`${styles.statCard} ${styles.total}`}>
+        <span className={styles.statIcon}>💰</span>
+        <span className={styles.statValue} style={{ fontSize: "1.1rem" }}>
+          {formatRupiah(sumOf("success"))}
+        </span>
+        <span className={styles.statLabel}>Total Masuk</span>
       </div>
     </div>
   );
 }
 
-const styles = {
-  container: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-    padding: "20px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "12px",
-    overflow: "hidden",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    display: "flex",
-    flexDirection: "column",
-  },
-  image: {
-    width: "100%",
-    height: "160px",
-    objectFit: "cover",
-  },
-  content: {
-    padding: "12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  title: {
-    fontSize: "16px",
-    fontWeight: "bold",
-    margin: 0,
-  },
-  desc: {
-    fontSize: "13px",
-    color: "#666",
-    margin: 0,
-  },
-  footer: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: "8px",
-    fontSize: "12px",
-  },
-  category: {
-    background: "#eee",
-    padding: "2px 6px",
-    borderRadius: "6px",
-  },
-  price: {
-    fontWeight: "bold",
-    color: "#e63946",
-  },
-  button: {
-    marginTop: "10px",
-    padding: "8px",
-    border: "none",
-    borderRadius: "8px",
-    background: "#2563eb",
-    color: "#fff",
-    cursor: "pointer",
-  },
-};
+// ── Delete modal ──────────────────────────────────────────────────────────
+function DeleteModal({ payment, onClose, onConfirm }) {
+  return (
+    <div
+      className={styles.overlay}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className={styles.deleteModal}>
+        <div className={styles.deleteIcon}>🗑️</div>
+        <div className={styles.deleteTitle}>Hapus Pembayaran?</div>
+        <div className={styles.deleteDesc}>
+          Hapus data pembayaran{" "}
+          <strong>#{payment.id.substring(0, 8).toUpperCase()}</strong> senilai{" "}
+          <strong>{formatRupiah(payment.amount)}</strong>? Tindakan ini tidak
+          dapat dibatalkan.
+        </div>
+        <div className={styles.deleteActions}>
+          <button className={styles.cancelBtn} onClick={onClose}>
+            Batal
+          </button>
+          <button className={styles.confirmDeleteBtn} onClick={onConfirm}>
+            🗑️ Ya, Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────
+export default function AdminPayments() {
+  const { data: res = [], isLoading, isError } = useGetPaymentsQuery();
+  const payments = res?.data?.payments || [];
+  const meta = res?.data?.meta || {};
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterMethod, setFilterMethod] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [toast, setToast] = useState("");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 8;
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2800);
+  };
+
+  // Filter
+  const filtered = useMemo(() => {
+    return payments.filter((p) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        p.id.includes(q) ||
+        p.order_id.includes(q) ||
+        p.midtrans_token.includes(q);
+      const matchStatus = filterStatus === "" || p.status === filterStatus;
+      const matchMethod = filterMethod === "" || p.method === filterMethod;
+      return matchSearch && matchStatus && matchMethod;
+    });
+  }, [payments, search, filterStatus, filterMethod]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Update status
+  const handleStatusChange = (id, newStatus) => {
+    setPayments((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              status: newStatus,
+              paid_at:
+                newStatus === "success" ? new Date().toISOString() : null,
+            }
+          : p,
+      ),
+    );
+    showToast(`Status pembayaran diperbarui ke "${newStatus}"`);
+  };
+
+  // Delete
+  const handleDelete = () => {
+    setPayments((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+    showToast(
+      `Pembayaran #${deleteTarget.id.substring(0, 8).toUpperCase()} berhasil dihapus`,
+    );
+    setDeleteTarget(null);
+  };
+
+  return (
+    <div className={styles.page}>
+      {/* Header */}
+      <div className={styles.pageHeader}>
+        <div>
+          <div className={styles.eyebrow}>✦ Keuangan</div>
+          <div className={styles.title}>Pembayaran</div>
+          <div className={styles.meta}>
+            {payments.length} transaksi · {filtered.length} ditampilkan
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <StatsRow payments={payments} />
+
+      {/* Toolbar */}
+      <div className={styles.toolbar}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>🔍</span>
+          <input
+            className={styles.searchInput}
+            placeholder="Cari ID, Order ID, atau token..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <select
+          className={styles.filterSelect}
+          value={filterStatus}
+          onChange={(e) => {
+            setFilterStatus(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="">Semua Status</option>
+          <option value="pending">Pending</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+        </select>
+        <select
+          className={styles.filterSelect}
+          value={filterMethod}
+          onChange={(e) => {
+            setFilterMethod(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="">Semua Metode</option>
+          <option value="midtrans">Midtrans</option>
+          <option value="cash">Cash</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead className={styles.thead}>
+            <tr>
+              <th className={styles.th}>#ID</th>
+              <th className={styles.th}>Order ID</th>
+              <th className={styles.th}>Metode</th>
+              <th className={styles.th}>Jumlah</th>
+              <th className={styles.th}>Status</th>
+              <th className={styles.th}>Ubah Status</th>
+              <th className={styles.th}>Dibayar</th>
+              <th className={styles.th}>Waktu</th>
+              <th className={styles.th}>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginated.length === 0 ? (
+              <tr>
+                <td colSpan={9} className={styles.td}>
+                  <div className={styles.empty}>
+                    <div className={styles.emptyIcon}>💳</div>
+                    <div className={styles.emptyText}>
+                      Tidak ada pembayaran ditemukan
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              paginated.map((pay, i) => (
+                <tr
+                  key={pay.id}
+                  className={`${styles.tr} ${i % 2 === 1 ? styles.trAlt : ""}`}
+                  style={{ animationDelay: `${i * 0.04}s` }}
+                >
+                  <td className={styles.td}>
+                    <span className={styles.idCode}>
+                      {pay.id.substring(0, 8)}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <span className={styles.idCode}>
+                      {pay.order_id.substring(0, 8)}…
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <span className={styles.methodBadge}>{pay.method}</span>
+                  </td>
+                  <td className={styles.td}>
+                    <span className={styles.amount}>
+                      {formatRupiah(pay.amount)}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <span
+                      className={`${styles.statusBadge} ${statusClass(pay.status)}`}
+                    >
+                      {pay.status}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <select
+                      className={styles.statusSelect}
+                      value={pay.status}
+                      onChange={(e) =>
+                        handleStatusChange(pay.id, e.target.value)
+                      }
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {s.charAt(0).toUpperCase() + s.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className={styles.td}>
+                    {pay.paid_at ? (
+                      <span className={styles.paidBadge}>
+                        ✓ {formatDate(pay.paid_at)}
+                      </span>
+                    ) : (
+                      <span className={styles.notPaid}>Belum</span>
+                    )}
+                  </td>
+                  <td className={styles.td}>{formatDate(pay.created_at)}</td>
+                  <td className={styles.td}>
+                    <div className={styles.actions}>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => setDeleteTarget(pay)}
+                      >
+                        🗑️ Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <span className={styles.pageMeta}>
+            Halaman {page} dari {totalPages}
+          </span>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={`${styles.pageBtn} ${page === i + 1 ? styles.pageBtnActive : ""}`}
+              onClick={() => setPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Delete modal */}
+      {deleteTarget && (
+        <DeleteModal
+          payment={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && <div className={styles.toast}>✅ {toast}</div>}
+    </div>
+  );
+}

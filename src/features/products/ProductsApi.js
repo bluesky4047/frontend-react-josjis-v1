@@ -21,7 +21,10 @@ export const productsApi = createApi({
   endpoints: (builder) => ({
     // Endpoint untuk GET /products - Menggunakan query untuk operasi read-only. Data akan dicache dan dapat diakses ulang tanpa request baru.
     getProducts: builder.query({
-      query: () => "/products",
+      query: (params = {}) => ({
+        url: "/products",
+        params,
+      }),
       //   transformResponse: (response) => {
       //     return response.data.products;
       //   },

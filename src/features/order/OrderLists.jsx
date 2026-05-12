@@ -1,10 +1,9 @@
-import React from "react";
-import { Link } from "react-router";
-import { orderStyles } from "./orderStyle";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import OrdersSkeleton from "./OrderLoading";
+// AdminOrders.jsx
+// Admin panel: Orders — Update Status, Hapus
+// CSS Module: AdminOrders.module.css
 
+import { useState, useMemo } from "react";
+import styles from "./orders.module.css";
 import {
   useGetOrdersQuery,
   useCreateOrderMutation,
@@ -12,188 +11,307 @@ import {
   useDeleteOrderMutation,
 } from "./OrdersApi";
 
-export default function OrderList() {
-  const navigate = useNavigate();
-  const formatRupiah = (value) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(Number(value));
-  };
+// ── Helpers ───────────────────────────────────────────────────────────────
+const formatRupiah = (v) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number(v));
 
-  const fallbackImage = "https://via.placeholder.com/300x200?text=No+Image";
-  const { data: res = [], isLoading, isError } = useGetOrdersQuery();
-  const [hoveredId, setHoveredId] = useState(null);
-  const formatDate = (iso) =>
-    new Date(iso).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  if (isLoading)
-    return (
-      <div style={orderStyles.page}>
-        <OrdersSkeleton />
-      </div>
-    );
+const STATUS_OPTIONS = ["pending", "served", "completed", "cancelled"];
 
-  const { orders, meta } = res.data;
+const statusClass = (s) => {
+  if (s === "pending") return styles.statusPending;
+  if (s === "completed") return styles.statusCompleted;
+  if (s === "cancelled") return styles.statusCancelled;
+  if (s === "served") return styles.statusServed;
+  return styles.statusPending;
+};
 
-  // const getProductName = (pid) => {
-  //   const p = res.data.data.products.find((x) => x.id === pid);
-  //   return p ? p.name : pid.substring(0, 8) + "…";
-  // };
-
+// ── Stats ─────────────────────────────────────────────────────────────────
+function StatsRow({ orders }) {
+  const count = (s) => orders.filter((o) => o.status === s).length;
+  const stats = [
+    {
+      key: "pending",
+      label: "Pending",
+      icon: "⏳",
+      value: count("pending"),
+      cls: "pending",
+    },
+    {
+      key: "served",
+      label: "Disajikan",
+      icon: "🍽️",
+      value: count("served"),
+      cls: "completed",
+    },
+    {
+      key: "completed",
+      label: "Selesai",
+      icon: "✅",
+      value: count("completed"),
+      cls: "completed",
+    },
+    {
+      key: "cancelled",
+      label: "Dibatalkan",
+      icon: "❌",
+      value: count("cancelled"),
+      cls: "cancelled",
+    },
+    {
+      key: "total",
+      label: "Total",
+      icon: "📋",
+      value: orders.length,
+      cls: "total",
+    },
+  ];
   return (
-    <div style={orderStyles.page}>
-      <div style={orderStyles.header}>
-        <div style={orderStyles.eyebrow}>✦ Transaksi</div>
-        <div style={orderStyles.title}>Daftar Pesanan</div>
-        <div style={orderStyles.meta}>
-          {meta.total} pesanan · Halaman {meta.page} dari {meta.totalPages}
+    <div className={styles.statsRow}>
+      {stats.map((s) => (
+        <div key={s.key} className={`${styles.statCard} ${styles[s.cls]}`}>
+          <span className={styles.statIcon}>{s.icon}</span>
+          <span className={styles.statValue}>{s.value}</span>
+          <span className={styles.statLabel}>{s.label}</span>
         </div>
-      </div>
+      ))}
+    </div>
+  );
+}
 
-      <div style={orderStyles.grid}>
-        {orders.map((order, i) => (
-          <div
-            key={order.id}
-            style={{ ...orderStyles.card, animationDelay: `${i * 0.08}s` }}
-          >
-            <div style={orderStyles.cardTop}>
-              <div>
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "0.88rem",
-                    color: "#3B1F0A",
-                    marginBottom: "2px",
-                  }}
-                >
-                  🛒 Pesanan #{order.id.substring(0, 8).toUpperCase()}
-                </div>
-                <div style={orderStyles.orderId}>
-                  {order.table_id
-                    ? `Meja ID : ${order.table_id.substring(0, 8)}…`
-                    : "Type : Takeaway"}
-                </div>
-                <div style={orderStyles.orderDate}>
-                  {formatDate(order.created_at)}
-                </div>
-              </div>
-              <span style={orderStyles.statusBadge(order.status)}>
-                {order.status}
-              </span>
-            </div>
-
-            <div style={orderStyles.cardBody}>
-              {order.order_items.map((item) => (
-                <div key={item.id} style={orderStyles.itemRow}>
-                  <div style={orderStyles.itemLeft}>
-                    <div style={orderStyles.itemQty}>{item.qty}×</div>
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: "0.88rem",
-                          color: "#3B1F0A",
-                        }}
-                      >
-                        {/* {getProductName(item.product_id)} */}
-                      </div>
-                      <div style={orderStyles.itemId}>
-                        {item.products.name.toUpperCase()}
-                      </div>
-                      <div style={orderStyles.itemId}>
-                        @{formatRupiah(item.price)}
-                      </div>
-                      {item.notes && (
-                        <div style={orderStyles.itemNote}>📝 {item.notes}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={orderStyles.itemPrice}>
-                    {formatRupiah(item.subtotal)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={orderStyles.cardFooter}>
-              <span style={orderStyles.totalLabel}>Total Pesanan</span>
-              <span style={orderStyles.total}>
-                {formatRupiah(order.total_amount)}
-              </span>
-            </div>
-          </div>
-        ))}
+// ── Delete modal ──────────────────────────────────────────────────────────
+function DeleteOrderModal({ order, onClose, onConfirm }) {
+  return (
+    <div
+      className={styles.overlay}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className={styles.deleteModal}>
+        <div className={styles.deleteIcon}>🗑️</div>
+        <div className={styles.deleteTitle}>Hapus Pesanan?</div>
+        <div className={styles.deleteDesc}>
+          Hapus pesanan{" "}
+          <strong>#{order.id.substring(0, 8).toUpperCase()}</strong> dari{" "}
+          <strong>{order.table_name}</strong>?<br />
+          Tindakan ini tidak dapat dibatalkan.
+        </div>
+        <div className={styles.deleteActions}>
+          <button className={styles.cancelBtn} onClick={onClose}>
+            Batal
+          </button>
+          <button className={styles.confirmDeleteBtn} onClick={onConfirm}>
+            🗑️ Ya, Hapus
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-const styles = {
-  container: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-    padding: "20px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "12px",
-    overflow: "hidden",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    display: "flex",
-    flexDirection: "column",
-  },
-  image: {
-    width: "100%",
-    height: "160px",
-    objectFit: "cover",
-  },
-  content: {
-    padding: "12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  title: {
-    fontSize: "16px",
-    fontWeight: "bold",
-    margin: 0,
-  },
-  desc: {
-    fontSize: "13px",
-    color: "#666",
-    margin: 0,
-  },
-  footer: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: "8px",
-    fontSize: "12px",
-  },
-  category: {
-    background: "#eee",
-    padding: "2px 6px",
-    borderRadius: "6px",
-  },
-  price: {
-    fontWeight: "bold",
-    color: "#e63946",
-  },
-  button: {
-    marginTop: "10px",
-    padding: "8px",
-    border: "none",
-    borderRadius: "8px",
-    background: "#2563eb",
-    color: "#fff",
-    cursor: "pointer",
-  },
-};
+// ── Main ──────────────────────────────────────────────────────────────────
+export default function AdminOrders() {
+  const { data: res = [], isLoading, isError } = useGetOrdersQuery();
+  const orders = res?.data?.orders || [];
+  const meta = res?.data?.meta || {};
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2800);
+  };
+
+  // ── Filter ────────────────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    return orders.filter((o) => {
+      const matchSearch =
+        o.id.toLowerCase().includes(search.toLowerCase()) ||
+        (o.table_name ?? "").toLowerCase().includes(search.toLowerCase());
+      const matchStatus = filterStatus === "" || o.status === filterStatus;
+      return matchSearch && matchStatus;
+    });
+  }, [orders, search, filterStatus]);
+
+  // ── Status update ─────────────────────────────────────────────────────
+  const handleStatusChange = (orderId, newStatus) => {
+    // setOrders((prev) =>
+    //   prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
+    // );
+    showToast(`Status pesanan diperbarui ke "${newStatus}"`);
+  };
+
+  // ── Delete ────────────────────────────────────────────────────────────
+  const handleDelete = () => {
+    // setOrders((prev) => prev.filter((o) => o.id !== deleteTarget.id));
+    showToast(
+      `Pesanan #${deleteTarget.id.substring(0, 8).toUpperCase()} berhasil dihapus`,
+    );
+    setDeleteTarget(null);
+  };
+
+  return (
+    <div className={styles.page}>
+      {/* Header */}
+      <div className={styles.pageHeader}>
+        <div>
+          <div className={styles.eyebrow}>✦ Transaksi</div>
+          <div className={styles.title}>Pesanan</div>
+          <div className={styles.meta}>
+            Halaman {meta.page} dari {meta.totalPages}, menampilkan{" "}
+            {meta.total < meta.limit ? meta.total : meta.limit} data dari total{" "}
+            {meta.total} pesanan
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <StatsRow orders={orders} />
+
+      {/* Toolbar */}
+      <div className={styles.toolbar}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>🔍</span>
+          <input
+            className={styles.searchInput}
+            placeholder="Cari ID pesanan atau nama meja..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className={styles.filterSelect}
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="">Semua Status</option>
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {s.charAt(0).toUpperCase() + s.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Order list */}
+      <div className={styles.orderList}>
+        {filtered.length === 0 ? (
+          <div className={styles.empty}>
+            <div className={styles.emptyIcon}>📋</div>
+            <div className={styles.emptyText}>Tidak ada pesanan ditemukan</div>
+          </div>
+        ) : (
+          filtered.map((order, i) => (
+            <div
+              key={order.id}
+              className={styles.orderCard}
+              style={{ animationDelay: `${i * 0.06}s` }}
+            >
+              {/* Top */}
+              <div className={styles.cardTop}>
+                <div className={styles.cardTopLeft}>
+                  <div className={styles.orderId}>
+                    🛒 #{order.id.substring(0, 8).toUpperCase()}
+                  </div>
+                  <div className={styles.orderSub}>
+                    📍 {order.table_name} &nbsp;·&nbsp; 🕐{" "}
+                    {formatDate(order.created_at)}
+                  </div>
+                </div>
+                <div className={styles.cardTopRight}>
+                  {/* Current status badge */}
+                  <span
+                    className={`${styles.statusBadge} ${statusClass(order.status)}`}
+                  >
+                    {order.status}
+                  </span>
+
+                  {/* Change status */}
+                  <select
+                    className={styles.statusSelect}
+                    value={order.status}
+                    onChange={(e) =>
+                      handleStatusChange(order.id, e.target.value)
+                    }
+                  >
+                    {STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s}>
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Delete */}
+                  <button
+                    className={styles.deleteOrderBtn}
+                    onClick={() => setDeleteTarget(order)}
+                  >
+                    🗑️ Hapus
+                  </button>
+                </div>
+              </div>
+
+              {/* Items */}
+              <div className={styles.cardBody}>
+                {order.order_items.map((item) => (
+                  <div key={item.id} className={styles.itemRow}>
+                    <div className={styles.itemLeft}>
+                      <div className={styles.itemQty}>{item.qty}×</div>
+                      <div className={styles.itemInfo}>
+                        <div className={styles.itemName}>
+                          {item?.products?.name}
+                        </div>
+                        <div className={styles.itemPriceUnit}>
+                          @{formatRupiah(item.price)}
+                        </div>
+                        {item.notes && (
+                          <div className={styles.itemNote}>📝 {item.notes}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.itemSubtotal}>
+                      {formatRupiah(item.subtotal)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className={styles.cardFooter}>
+                <span className={styles.totalLabel}>Total Pesanan</span>
+                <span className={styles.total}>
+                  {formatRupiah(order.total_amount)}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Delete modal */}
+      {deleteTarget && (
+        <DeleteOrderModal
+          order={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && <div className={styles.toast}>✅ {toast}</div>}
+    </div>
+  );
+}

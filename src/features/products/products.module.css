@@ -1,0 +1,638 @@
+/* AdminProducts.module.css */
+/* Tema: Warung Nusantara Admin — Batik Brown + Warm Orange + Golden */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;500;600;700;800&display=swap");
+
+/* ── Page ── */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: "Nunito", sans-serif;
+}
+
+/* ── Page header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.titleGroup {
+}
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #d4621a;
+  margin-bottom: 0.3rem;
+}
+.title {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  color: #3b1f0a;
+  font-weight: 700;
+  line-height: 1;
+}
+.meta {
+  color: #9b6a3a;
+  font-size: 0.82rem;
+  margin-top: 0.3rem;
+}
+
+/* ── Add button ── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #d4621a, #e8a923);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(212, 98, 26, 0.35);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.addBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(212, 98, 26, 0.45);
+}
+.addBtn:active {
+  transform: translateY(0);
+}
+
+/* ── Search & Filter bar ── */
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+.searchInput {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 2px solid #e8d5b0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-family: "Nunito", sans-serif;
+  color: #3b1f0a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.searchInput:focus {
+  border-color: #d4621a;
+}
+.filterSelect {
+  padding: 9px 14px;
+  border: 2px solid #e8d5b0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-family: "Nunito", sans-serif;
+  color: #3b1f0a;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  margin-left: 50px;
+}
+.filterSelect:focus {
+  border-color: #d4621a;
+}
+
+/* ── Table ── */
+.tableWrap {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(59, 31, 10, 0.1);
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.thead {
+  background: linear-gradient(135deg, #3b1f0a, #5c2e10);
+}
+.th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #e8a923;
+  white-space: nowrap;
+}
+.th:last-child {
+  text-align: center;
+}
+
+.tr {
+  border-bottom: 1px solid #f5e6c8;
+  transition: background 0.15s;
+  animation: rowIn 0.3s ease both;
+}
+.tr:last-child {
+  border-bottom: none;
+}
+.tr:hover {
+  background: #fffdf7;
+}
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.trAlt {
+  background: #fdfaf4;
+}
+
+.td {
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  color: #3b1f0a;
+  vertical-align: middle;
+}
+
+/* Product image cell */
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.productThumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f5e6c8;
+  flex-shrink: 0;
+  border: 2px solid #f5e6c8;
+}
+.productName {
+  font-weight: 700;
+  color: #3b1f0a;
+  font-size: 0.9rem;
+}
+.productDesc {
+  font-size: 0.75rem;
+  color: #9b6a3a;
+  margin-top: 2px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Price */
+.price {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  color: #d4621a;
+  font-size: 0.95rem;
+}
+
+/* Category badge */
+.categoryBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: #f5e6c8;
+  color: #5c2e10;
+}
+.categoryNone {
+  color: #c0a878;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+/* Status toggle */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.statusActive {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.statusInactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  background: #fef9c3;
+  color: #ca8a04;
+}
+.editBtn:hover {
+  background: #fde68a;
+}
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  background: #fee2e2;
+  color: #dc2626;
+}
+.deleteBtn:hover {
+  background: #fecaca;
+}
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #c0a878;
+}
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.emptyText {
+  font-size: 0.95rem;
+}
+
+/* ── MODAL overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(59, 31, 10, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: overlayIn 0.2s ease;
+}
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(59, 31, 10, 0.3);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 0;
+}
+.modalTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  color: #3b1f0a;
+  font-weight: 700;
+}
+.modalClose {
+  background: #f5e6c8;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b1f0a;
+  transition: background 0.15s;
+}
+.modalClose:hover {
+  background: #edd5a3;
+}
+.modalBody {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+/* Form fields */
+.formGroup {
+  margin-bottom: 1.1rem;
+}
+.label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #3b1f0a;
+  margin-bottom: 0.4rem;
+}
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 2px solid #e8d5b0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-family: "Nunito", sans-serif;
+  color: #3b1f0a;
+  background: #fffdf7;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #d4621a;
+}
+.fileInput {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #d6b98c;
+  border-radius: 12px;
+  background: #fffaf1;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.previewWrap {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+.previewGrid {
+  margin-top: 14px;
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+
+  gap: 12px;
+}
+
+.previewCard {
+  position: relative;
+}
+
+.previewImage {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 2px solid #efd4a7;
+  background: #fff;
+}
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.25rem;
+}
+.checkRow input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #d4621a;
+}
+.checkLabel {
+  font-size: 0.85rem;
+  color: #3b1f0a;
+  font-weight: 600;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.cancelBtn {
+  padding: 9px 20px;
+  border: 2px solid #e8d5b0;
+  border-radius: 10px;
+  background: #fff;
+  color: #3b1f0a;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cancelBtn:hover {
+  background: #f5e6c8;
+}
+.submitBtn {
+  padding: 9px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d4621a, #e8a923);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  box-shadow: 0 4px 14px rgba(212, 98, 26, 0.3);
+}
+.submitBtn:hover {
+  opacity: 0.88;
+}
+
+/* ── Delete confirm modal ── */
+.deleteModal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  box-shadow: 0 24px 64px rgba(59, 31, 10, 0.3);
+  text-align: center;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.deleteIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.deleteTitle {
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  color: #3b1f0a;
+  margin-bottom: 0.5rem;
+}
+.deleteDesc {
+  font-size: 0.85rem;
+  color: #9b6a3a;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.deleteActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.confirmDeleteBtn {
+  padding: 9px 24px;
+  border: none;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.confirmDeleteBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #3b1f0a;
+  color: #fdf6e3;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: "Nunito", sans-serif;
+  z-index: 999;
+  box-shadow: 0 8px 32px rgba(59, 31, 10, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.pageBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #e8d5b0;
+  background: #fff;
+  color: #3b1f0a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.pageBtn:hover {
+  background: #f5e6c8;
+}
+.pageBtnActive {
+  background: linear-gradient(135deg, #d4621a, #e8a923);
+  color: #fff;
+  border-color: transparent;
+}
+.pageMeta {
+  font-size: 0.78rem;
+  color: #9b6a3a;
+  margin-right: 0.5rem;
+}
