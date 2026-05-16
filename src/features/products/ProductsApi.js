@@ -21,14 +21,18 @@ export const productsApi = createApi({
   endpoints: (builder) => ({
     // Endpoint untuk GET /products - Menggunakan query untuk operasi read-only. Data akan dicache dan dapat diakses ulang tanpa request baru.
     getProducts: builder.query({
-      query: (params = {}) => ({
-        url: "/products",
-        params,
-      }),
-      //   transformResponse: (response) => {
-      //     return response.data.products;
-      //   },
-      // providesTags: Menandai cache ini dengan tag "Product". Jika ada mutation yang invalidates "Product", cache ini akan dihapus dan refetch.
+      query: (params = {}) => {
+        const cleanParams = Object.fromEntries(
+          Object.entries(params).filter(
+            ([_, v]) => v !== "" && v !== null && v !== undefined,
+          ),
+        );
+
+        return {
+          url: "/products",
+          params: cleanParams,
+        };
+      },
       providesTags: ["Product"],
     }),
 

@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 import {
   useGetProductsQuery,
   useCreateProductMutation,
@@ -9,40 +9,44 @@ import {
 const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
-  const {
-    data: products = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useGetProductsQuery();
+  const [query, setQuery] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+    sortBy: "created_at",
+    order: "desc",
+  });
+
+  const { data, isLoading, isError, error, refetch } =
+    useGetProductsQuery(query);
 
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
 
-  const addProduct = async (data) => {
-    return await createProduct(data).unwrap();
-  };
+  const addProduct = async (data) => await createProduct(data).unwrap();
 
-  const editProduct = async (id, data) => {
-    return await updateProduct({ id, ...data }).unwrap();
-  };
+  const editProduct = async (id, data) =>
+    await updateProduct({ id, ...data }).unwrap();
 
-  const removeProduct = async (id) => {
-    return await deleteProduct(id).unwrap();
-  };
+  const removeProduct = async (id) => await deleteProduct(id).unwrap();
 
   return (
     <ProductContext.Provider
       value={{
-        products,
+        products: data?.data?.products || [],
+        meta: data?.data?.meta || {},
         isLoading,
         error: isError ? error : null,
-        refetch,
+
+        // CRUD
         addProduct,
         editProduct,
         removeProduct,
+
+        // 🔥 QUERY CONTROL
+        query,
+        setQuery,
       }}
     >
       {children}

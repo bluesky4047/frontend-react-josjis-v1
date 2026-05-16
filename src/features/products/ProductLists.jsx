@@ -266,42 +266,32 @@ function DeleteConfirmModal({ product, onClose, onConfirm }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function AdminProducts() {
-  const {
-    products: res,
-    isLoading,
-    error,
-    addProduct,
-    editProduct,
-    removeProduct,
-  } = useProducts();
-  const products = res.data?.products || [];
-  const meta = res.data?.meta || {};
-  const [search, setSearch] = useState("");
-  const [filterCat, setFilterCat] = useState("");
   const [modalType, setModalType] = useState(null); // "add" | "edit" | "delete"
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState("");
-  const [page, setPage] = useState(1);
-  const PER_PAGE = 10;
+  const {
+    products,
+    meta,
+    isLoading,
+    addProduct,
+    editProduct,
+    removeProduct,
+    query,
+    setQuery,
+  } = useProducts();
+  const { page, search, limit } = query;
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 2800);
   };
 
-  // ── Filtered list ──────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    return products.filter((p) => {
-      const matchSearch =
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.description ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchCat = filterCat === "" || (p.category ?? "") === filterCat;
-      return matchSearch && matchCat;
-    });
-  }, [products, search, filterCat]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const changePage = (newPage) => {
+    setQuery((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
 
   // ── CRUD handlers ──────────────────────────────────────────────────────
   const handleSave = async (data) => {
@@ -371,6 +361,7 @@ export default function AdminProducts() {
 
       {/* ── Toolbar ── */}
       <div className={styles.toolbar}>
+        {/* SEARCH */}
         <div className={styles.searchWrap}>
           <span className={styles.searchIcon}>🔍</span>
           <input
@@ -378,25 +369,64 @@ export default function AdminProducts() {
             placeholder="Cari nama atau deskripsi..."
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
+              setQuery((prev) => ({
+                ...prev,
+                search: e.target.value,
+                page: 1,
+              }));
             }}
           />
         </div>
+
+        {/* SORT BY */}
         <select
+          value={query.sortBy}
           className={styles.filterSelect}
-          value={filterCat}
-          onChange={(e) => {
-            setFilterCat(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) =>
+            setQuery((prev) => ({
+              ...prev,
+              sortBy: e.target.value,
+              page: 1,
+            }))
+          }
         >
-          <option value="">Semua Kategori</option>
-          <option value="">Tanpa Kategori</option>
-          <option value="makanan">Makanan</option>
-          <option value="minuman">Minuman</option>
-          <option value="snack">Snack</option>
-          <option value="dessert">Dessert</option>
+          <option value="created_at">Tanggal</option>
+          <option value="price">Harga</option>
+          <option value="name">Nama</option>
+        </select>
+
+        {/* ORDER */}
+        <select
+          value={query.order}
+          className={styles.filterSelect}
+          onChange={(e) =>
+            setQuery((prev) => ({
+              ...prev,
+              order: e.target.value,
+              page: 1,
+            }))
+          }
+        >
+          <option value="desc">Menurun / Desc</option>
+          <option value="asc">Menaik / Asc</option>
+        </select>
+
+        {/* LIMIT */}
+        <select
+          value={query.limit}
+          className={styles.filterSelect}
+          onChange={(e) =>
+            setQuery((prev) => ({
+              ...prev,
+              limit: Number(e.target.value),
+              page: 1,
+            }))
+          }
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
         </select>
       </div>
 
@@ -415,7 +445,16 @@ export default function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {paginated.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className={styles.td}>
+                  <div className={styles.empty}>
+                    <div className={styles.emptyIcon}>⏳</div>
+                    <div className={styles.emptyText}>Loading produk...</div>
+                  </div>
+                </td>
+              </tr>
+            ) : products.length === 0 ? (
               <tr>
                 <td colSpan={6} className={styles.td}>
                   <div className={styles.empty}>
@@ -427,7 +466,7 @@ export default function AdminProducts() {
                 </td>
               </tr>
             ) : (
-              paginated.map((p, i) => (
+              products.map((p, i) => (
                 <tr
                   key={p.id}
                   className={`${styles.tr} ${i % 2 === 1 ? styles.trAlt : ""}`}
@@ -539,22 +578,37 @@ export default function AdminProducts() {
       </div>
 
       {/* ── Pagination ── */}
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
-          <span className={styles.pageMeta}>
-            Halaman {page} dari {totalPages}
-          </span>
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.pageBtn} ${page === i + 1 ? styles.pageBtnActive : ""}`}
-              onClick={() => setPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className={styles.pagination}>
+        <span className={styles.pageMeta}>
+          Halaman {page} dari {meta.totalPages}
+        </span>
+        {page > 1 && (
+          <button
+            className={`${styles.pageBtn} ${page === 1 ? styles.pageBtnActive : ""}`}
+            onClick={() => changePage(page - 1)}
+          >
+            {page - 1}
+          </button>
+        )}
+
+        {Array.from({ length: meta.totalPages || 1 }).map((_, i) => (
+          <button
+            key={i}
+            className={`${styles.pageBtn} ${page === i + 1 ? styles.pageBtnActive : ""}`}
+            onClick={() => changePage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          className={`${styles.pageBtn} ${page === meta.totalPages ? styles.pageBtnActive : ""}`}
+          disabled={page === meta.totalPages}
+          onClick={() => changePage(page + 1)}
+        >
+          {page + 1}
+        </button>
+      </div>
 
       {/* ── Modals ── */}
       {(modalType === "add" || modalType === "edit") && (
