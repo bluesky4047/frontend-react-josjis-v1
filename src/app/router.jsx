@@ -13,6 +13,7 @@ const SigninPage = React.lazy(() => import("../pages/auth/Signin"));
 const AdminPage = React.lazy(() => import("../pages/Admin"));
 const Unauthorized = React.lazy(() => import("../pages/Unauthorized"));
 const NotFound = React.lazy(() => import("../pages/NotFound"));
+import { ProductProvider } from "../features/products/productContext";
 
 export const router = createBrowserRouter([
   // PUBLIC
@@ -35,7 +36,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <ProductsPage />,
+        element: (
+          <ProductProvider>
+            <ProductsPage />
+          </ProductProvider>
+        ),
       },
       {
         path: "/products/:id",

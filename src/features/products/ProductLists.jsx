@@ -1,11 +1,6 @@
 import { useState, useMemo } from "react";
 import styles from "./products.module.css";
-import {
-  useGetProductsQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-} from "./ProductsApi";
+import { useProducts } from "./productContext";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const formatRupiah = (val) =>
@@ -23,7 +18,7 @@ const EMPTY_FORM = {
   category: "",
   price: "",
   is_active: true,
-  image: [],
+  images: [],
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────
@@ -75,23 +70,28 @@ function ProductFormModal({ product, onClose, onSave }) {
     return e;
   };
 
-  // const { addProduct, editProduct } = useProducts();
-
-  const handleSave = () => {
+  const submitForm = () => {
     const e = validate();
+
     if (Object.keys(e).length) {
       setErrors(e);
       return;
     }
+
     onSave({
       ...(isEdit
         ? product
-        : { id: uid(), img_urls: [], created_at: new Date().toISOString() }),
+        : {
+            id: uid(),
+            img_urls: [],
+            created_at: new Date().toISOString(),
+          }),
       ...form,
-      image: form.image,
+      images: form.images,
       price: String(Number(form.price)),
       category: form.category.trim() || null,
     });
+    console.log("FILES:", form.images);
   };
 
   return (
@@ -228,7 +228,7 @@ function ProductFormModal({ product, onClose, onSave }) {
             <button className={styles.cancelBtn} onClick={onClose}>
               Batal
             </button>
-            <button className={styles.submitBtn} onClick={handleSave}>
+            <button className={styles.submitBtn} onClick={submitForm}>
               {isEdit ? "💾 Simpan Perubahan" : "➕ Tambah Produk"}
             </button>
           </div>
@@ -266,7 +266,14 @@ function DeleteConfirmModal({ product, onClose, onConfirm }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function AdminProducts() {
-  const { data: res = [], isLoading, isError } = useGetProductsQuery();
+  const {
+    products: res,
+    isLoading,
+    error,
+    addProduct,
+    editProduct,
+    removeProduct,
+  } = useProducts();
   const products = res.data?.products || [];
   const meta = res.data?.meta || {};
   const [search, setSearch] = useState("");
@@ -297,23 +304,38 @@ export default function AdminProducts() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   // ── CRUD handlers ──────────────────────────────────────────────────────
-  const handleSave = (data) => {
-    if (modalType === "add") {
-      // setProducts((prev) => [data, ...prev]);
-      showToast(`Produk "${data.name}" berhasil ditambahkan`);
-    } else {
-      // setProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
-      showToast(`Produk "${data.name}" berhasil diperbarui`);
+  const handleSave = async (data) => {
+    try {
+      if (modalType === "add") {
+        await addProduct(data);
+
+        showToast(`Produk "${data.name}" berhasil ditambahkan`);
+      } else {
+        await editProduct(data.id, data);
+
+        showToast(`Produk "${data.name}" berhasil diperbarui`);
+      }
+
+      setModalType(null);
+      setSelected(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Terjadi kesalahan");
     }
-    setModalType(null);
-    setSelected(null);
   };
 
-  const handleDelete = () => {
-    // setProducts((prev) => prev.filter((p) => p.id !== selected.id));
-    showToast(`Produk "${selected.name}" berhasil dihapus`);
-    setModalType(null);
-    setSelected(null);
+  const handleDelete = async () => {
+    try {
+      await removeProduct(selected.id);
+
+      showToast(`Produk "${selected.name}" berhasil dihapus`);
+
+      setModalType(null);
+      setSelected(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Gagal menghapus produk");
+    }
   };
 
   const openEdit = (p) => {
@@ -386,7 +408,8 @@ export default function AdminProducts() {
               <th className={styles.th}>Produk</th>
               <th className={styles.th}>Kategori</th>
               <th className={styles.th}>Harga</th>
-              <th className={styles.th}>Status</th>
+              <th className={styles.th}>Active</th>
+              <th className={styles.th}>Deleted</th>
               <th className={styles.th}>Dibuat</th>
               <th className={styles.th}>Aksi</th>
             </tr>
@@ -455,7 +478,16 @@ export default function AdminProducts() {
                     <span
                       className={`${styles.statusBadge} ${p.is_active ? styles.statusActive : styles.statusInactive}`}
                     >
-                      {p.is_active ? "● Aktif" : "● Nonaktif"}
+                      {p.is_active ? "True" : "False"}
+                    </span>
+                  </td>
+
+                  {/* Deleted */}
+                  <td className={styles.td}>
+                    <span
+                      className={`${styles.statusBadge} ${p.is_deleted ? styles.statusInactive : styles.statusActive}`}
+                    >
+                      {p.is_deleted ? "● Yes" : "● No"}
                     </span>
                   </td>
 
@@ -477,12 +509,26 @@ export default function AdminProducts() {
                       >
                         ✏️ Edit
                       </button>
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={() => openDelete(p)}
-                      >
-                        🗑️ Hapus
-                      </button>
+                      {p.is_deleted ? (
+                        <button
+                          className={styles.restoreBtn}
+                          onClick={() =>
+                            editProduct(p.id, {
+                              ...p,
+                              is_deleted: false,
+                            })
+                          }
+                        >
+                          ♻️ Restore
+                        </button>
+                      ) : (
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => openDelete(p)}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

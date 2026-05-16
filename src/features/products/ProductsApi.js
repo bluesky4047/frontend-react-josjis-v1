@@ -39,23 +39,54 @@ export const productsApi = createApi({
 
     // Endpoint untuk POST /products - Menggunakan mutation untuk operasi yang mengubah data (create).
     createProduct: builder.mutation({
-      query: (data) => ({
-        url: "/products",
-        method: "POST",
-        body: data, // Data yang dikirim dalam body request.
-      }),
+      query: (data) => {
+        const formData = new FormData();
+
+        formData.append("name", data.name);
+        formData.append("price", data.price);
+        formData.append("description", data.description);
+        formData.append("category", data.category);
+        formData.append("is_active", data.is_active ? true : false);
+
+        // upload multiple images
+        data.images?.forEach((file) => {
+          formData.append("img", file);
+        });
+
+        return {
+          url: "/products",
+          method: "POST",
+          body: formData,
+        };
+      },
       // invalidatesTags: Setelah mutation berhasil, hapus cache dengan tag "Product" agar query getProducts refetch data terbaru.
       invalidatesTags: ["Product"],
     }),
 
     // Endpoint untuk PUT /products/:id - Mutation untuk update product berdasarkan ID.
     updateProduct: builder.mutation({
-      query: ({ id, ...body }) => ({
-        url: `/products/${id}`,
-        method: "PUT",
-        body, // Body berisi data update, id sudah diekstrak.
-      }),
-      invalidatesTags: ["Product"], // Invalidasi cache setelah update.
+      query: ({ id, ...data }) => {
+        const formData = new FormData();
+
+        formData.append("name", data.name);
+        formData.append("price", data.price);
+        formData.append("description", data.description);
+        formData.append("category", data.category);
+        formData.append("is_active", data.is_active ? true : false);
+        formData.append("is_deleted", data.is_deleted ? true : false);
+
+        // kalau ada gambar baru
+        data.images?.forEach((file) => {
+          formData.append("img", file);
+        });
+
+        return {
+          url: `/products/${id}`,
+          method: "PUT", // atau "PATCH" tergantung backend
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Product"],
     }),
 
     // Endpoint untuk DELETE /products/:id - Mutation untuk menghapus product.

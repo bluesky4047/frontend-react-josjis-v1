@@ -280,6 +280,24 @@
 .editBtn:hover {
   background: #fde68a;
 }
+.restoreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  background: #dcfce7;
+  color: #15803d;
+}
+.restoreBtn:hover {
+  background: #bbf7d0;
+}
 .deleteBtn {
   display: inline-flex;
   align-items: center;
