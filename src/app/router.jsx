@@ -83,6 +83,18 @@ export const router = createBrowserRouter([
     ),
   },
 
-  { path: "/unauthorized", element: <Unauthorized /> },
+  {
+    path: "/unauthorized",
+    element: (
+      <Unauthorized
+        onGoHome={() => {
+          router.navigate("/");
+        }}
+        onGoLogin={() => {
+          router.navigate("/signin");
+        }}
+      />
+    ),
+  },
   { path: "*", element: <NotFound /> },
 ]);

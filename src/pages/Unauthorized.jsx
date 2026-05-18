@@ -1,61 +1,79 @@
-import { Link } from "react-router";
+// Unauthorized.jsx
+// Halaman 401 — Akses Ditolak
+// Tema: Warung Nusantara — Batik Brown + Warm Orange + Golden
+// CSS Module: Unauthorized.module.css
 
-export default function Unauthorized() {
+import styles from "./unauthorized.module.css";
+
+// ── Props ──────────────────────────────────────────────────────────────────
+// onGoLogin   : () => void  — arahkan ke halaman login
+// onGoHome    : () => void  — arahkan ke beranda (opsional)
+// ──────────────────────────────────────────────────────────────────────────
+
+export default function Unauthorized({ onGoLogin, onGoHome }) {
   return (
-    <>
-      <style>{`
-        .page {
-          min-height: 100vh;
-          background: #0a0a14;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'DM Sans', sans-serif;
-          color: #e5e7eb;
-          padding: 20px;
-        }
+    <div className={styles.wrapper}>
+      {/* Background layers */}
+      <div className={styles.texture} />
+      <div className={styles.glowOrange} />
+      <div className={styles.glowGold} />
 
-        .card {
-          background: rgba(15,15,28,0.95);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 20px;
-          padding: 40px;
-          text-align: center;
-          max-width: 420px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
+      {/* Card */}
+      <div className={styles.card}>
+        {/* Animated top band */}
+        <div className={styles.band} />
 
-        .code {
-          font-size: 40px;
-          color: #f87171;
-          font-weight: 700;
-        }
+        <div className={styles.body}>
+          {/* Lock icon */}
+          <div className={styles.lockWrap}>
+            <div className={styles.lockCircle}>🔐</div>
+            <div className={styles.lockBadge}>!</div>
+          </div>
 
-        .btn {
-          margin-top: 20px;
-          display: inline-block;
-          padding: 10px 16px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #6366f1, #7c3aed);
-          color: white;
-          text-decoration: none;
-          font-size: 14px;
-        }
-      `}</style>
+          {/* 401 code */}
+          <div className={styles.code}>
+            4<span className={styles.codeAccent}>0</span>1
+          </div>
 
-      <div className="page">
-        <div className="card">
-          <div className="code">403</div>
-          <h1 className="mt-2">Unauthorized</h1>
-          <p className="text-sm text-gray-400">
-            Kamu tidak punya akses ke halaman ini
+          {/* Title */}
+          <div className={styles.titleRow}>
+            <div className={styles.title}>Akses Ditolak</div>
+          </div>
+
+          {/* Description */}
+          <p className={styles.desc}>
+            Maaf, kamu tidak memiliki izin untuk mengakses halaman ini. Silakan
+            masuk terlebih dahulu dengan akun yang valid untuk melanjutkan.
           </p>
 
-          <Link to="/" className="btn">
-            Kembali ke Home
-          </Link>
+          {/* Divider */}
+          <div className={styles.divider}>
+            <div className={styles.dividerLine} />
+            <span className={styles.dividerIcon}>🌿</span>
+            <div className={`${styles.dividerLine} ${styles.right}`} />
+          </div>
+
+          {/* Buttons */}
+          <div className={styles.buttons}>
+            <button className={styles.btnPrimary} onClick={onGoLogin}>
+              🔑 Masuk ke Akun
+            </button>
+            {onGoHome && (
+              <button className={styles.btnSecondary} onClick={onGoHome}>
+                ← Kembali ke Beranda
+              </button>
+            )}
+          </div>
+
+          {/* Footer note */}
+          <div className={styles.note}>
+            Butuh akses? Hubungi administrator warung.{" "}
+            <span className={styles.noteLink} onClick={onGoLogin}>
+              Login di sini
+            </span>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
